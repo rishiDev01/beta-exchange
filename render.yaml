@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: beta-exchange-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        fromValue: mongodb+srv://gua:admin@cluster0.bwlsrdb.mongodb.net/beta-exchange
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FINNHUB_API_KEY
+        sync: false
