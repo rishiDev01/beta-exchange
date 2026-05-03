@@ -52,7 +52,9 @@ const useMarketStore = create((set, get) => ({
 
   connectSocket: () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
-    const socket = io(backendUrl); 
+    const socket = io(backendUrl, {
+      transports: ['websocket']
+    }); 
 
     socket.on('marketData', (updatedStocks) => {
       set({ stocks: updatedStocks });

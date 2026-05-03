@@ -16,7 +16,8 @@ const MarketWatch = () => {
     fetchStocks();
     connectSocket();
     return () => disconnectSocket();
-  }, [fetchStocks, connectSocket, disconnectSocket]);
+  }, []); // Empty dependency array to prevent reconnects
+
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
