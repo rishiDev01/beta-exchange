@@ -4,10 +4,13 @@ import { TrendingUp, TrendingDown, Search } from 'lucide-react';
 import OrderModal from './OrderModal';
 
 const MarketWatch = () => {
-  const { stocks, fetchStocks, connectSocket, disconnectSocket, isLoading } = useMarketStore();
+  const { stocks, fetchStocks, connectSocket, disconnectSocket, isLoading, searchStocks, addStockToWatchlist } = useMarketStore();
   const [selectedStock, setSelectedStock] = useState(null);
   const [orderType, setOrderType] = useState(null);
   const [hoveredSymbol, setHoveredSymbol] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     fetchStocks();
@@ -15,10 +18,36 @@ const MarketWatch = () => {
     return () => disconnectSocket();
   }, [fetchStocks, connectSocket, disconnectSocket]);
 
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length > 1) {
+        setIsSearching(true);
+        const results = await searchStocks(searchQuery);
+        setSearchResults(results.filter(r => r.type === 'Common Stock').slice(0, 5));
+        setIsSearching(false);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, searchStocks]);
+
   const openOrder = (stock, type) => {
     setSelectedStock(stock);
     setOrderType(type);
   };
+
+  const handleAddStock = async (symbol) => {
+    await addStockToWatchlist(symbol);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  const filteredStocks = stocks.filter(stock => 
+    stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    stock.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading && stocks.length === 0) {
     return <div className="p-4 text-center">Loading Market Data...</div>;
@@ -33,12 +62,42 @@ const MarketWatch = () => {
           <input
             type="text"
             placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-7 sm:pl-8 pr-2 sm:pr-4 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:ring-blue-500 focus:border-blue-500 w-24 sm:w-auto"
           />
+          
+          {/* Search Results Dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute top-full right-0 mt-1 w-64 bg-white shadow-xl rounded-md border border-gray-200 z-50 overflow-hidden">
+              <div className="p-2 text-[10px] font-bold text-gray-400 uppercase bg-gray-50 border-b">Global Market Results</div>
+              {searchResults.map((result) => (
+                <div
+                  key={result.symbol}
+                  className="p-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0"
+                  onClick={() => handleAddStock(result.symbol)}
+                >
+                  <div>
+                    <div className="font-bold text-xs text-gray-900">{result.symbol}</div>
+                    <div className="text-[10px] text-gray-500 truncate w-40">{result.description}</div>
+                  </div>
+                  <button className="text-blue-600 font-bold text-[10px] hover:underline">ADD</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {isSearching && (
+             <div className="absolute top-full right-0 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 z-50 p-2 text-center">
+                <div className="animate-spin inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+             </div>
+          )}
         </div>
       </div>
       <div className="divide-y divide-gray-100 overflow-y-auto flex-1">
-        {stocks.map((stock) => (
+        {filteredStocks.length === 0 && searchQuery && !isSearching && searchResults.length === 0 && (
+          <div className="p-4 text-center text-gray-500 text-sm italic">No local matches. Try a specific symbol.</div>
+        )}
+        {filteredStocks.map((stock) => (
           <div
             key={stock.symbol}
             className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors relative group"
