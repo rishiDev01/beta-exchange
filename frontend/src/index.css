@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +13,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background-color: #f9fafb; /* gray-50 */
+}
+
+.dark body {
+  background-color: #111827; /* gray-900 */
 }
 
 /* Remove Vite default centering */

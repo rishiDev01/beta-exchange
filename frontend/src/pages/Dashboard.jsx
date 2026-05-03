@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
-import { LogOut } from 'lucide-react';
+import useThemeStore from '../store/useThemeStore';
+import { LogOut, Sun, Moon } from 'lucide-react';
 import Wallet from '../components/Wallet';
 import MarketWatch from '../components/MarketWatch';
 import Holdings from '../components/Holdings';
@@ -8,6 +9,7 @@ import StockChart from '../components/StockChart';
 
 const Dashboard = () => {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
 
   const onLogout = () => {
@@ -16,17 +18,24 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm sticky top-0 z-40">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <span className="text-xl font-bold text-blue-600">Beta Exchange</span>
+                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">Beta Exchange</span>
               </div>
             </div>
-            <div className="flex items-center">
-              <span className="text-gray-700 mr-2 sm:mr-4 text-sm sm:text-base hidden xs:inline">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none transition-colors"
+                aria-label="Toggle dark mode"
+              >
+                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+              <span className="text-gray-700 dark:text-gray-300 mr-2 sm:mr-4 text-sm sm:text-base hidden xs:inline">
                 Welcome, <span className="font-semibold hidden sm:inline">{user && user.name}</span>
               </span>
               <button

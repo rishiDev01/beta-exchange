@@ -2,7 +2,7 @@ const axios = require('axios');
 const { getIO } = require('../config/socket');
 
 // Initial symbols to track. All values (price, name, change) will be fetched dynamically.
-let stocks = [
+const stocks = [
   { symbol: 'AAPL' },
   { symbol: 'MSFT' },
   { symbol: 'GOOGL' },
@@ -56,7 +56,8 @@ const initializeStocks = async () => {
     }
   }
   
-  stocks = updatedStocks;
+  stocks.length = 0;
+  stocks.push(...updatedStocks);
 };
 
 const fetchStockData = async () => {
