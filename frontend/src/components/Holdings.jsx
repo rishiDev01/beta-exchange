@@ -16,7 +16,7 @@ const Holdings = () => {
     const pl = (currentPrice - holding.averagePrice) * holding.quantity;
     return {
       currentPrice,
-      pl: pl.toFixed(2),
+      pl: (pl || 0).toFixed(2),
       isProfit: pl >= 0,
     };
   };
@@ -56,8 +56,8 @@ const Holdings = () => {
                   <tr key={holding._id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-3 px-3 sm:py-4 sm:px-4 font-bold text-xs sm:text-sm">{holding.symbol}</td>
                     <td className="py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm">{holding.quantity}</td>
-                    <td className="py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm">${holding.averagePrice.toFixed(2)}</td>
-                    <td className="py-3 px-3 sm:py-4 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">${currentPrice.toFixed(2)}</td>
+                    <td className="py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm">${(holding.averagePrice || 0).toFixed(2)}</td>
+                    <td className="py-3 px-3 sm:py-4 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">${(currentPrice || 0).toFixed(2)}</td>
                     <td className={`py-3 px-3 sm:py-4 sm:px-4 font-bold text-xs sm:text-sm ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
                       {isProfit ? '+$' : '-$'}{Math.abs(pl)}
                     </td>

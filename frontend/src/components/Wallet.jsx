@@ -26,7 +26,7 @@ const Wallet = () => {
           <DollarSign className="mr-2 text-green-600 h-5 w-5 sm:h-6 sm:w-6" /> Wallet Balance
         </h2>
         <div className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 sm:mb-6">
-          ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          ${(balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </div>
         
         <form onSubmit={handleDeposit} className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
@@ -74,7 +74,7 @@ const Wallet = () => {
                            {tx.type}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap py-3 px-3 sm:px-4 text-xs sm:text-sm text-gray-600 font-semibold">${tx.amount.toLocaleString('en-US')}</td>
+                      <td className="whitespace-nowrap py-3 px-3 sm:px-4 text-xs sm:text-sm text-gray-600 font-semibold">${(tx.amount || 0).toLocaleString('en-US')}</td>
                       <td className="whitespace-nowrap py-3 px-3 sm:px-4 text-xs sm:text-sm">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-bold ${tx.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                           {tx.status}

@@ -128,7 +128,7 @@ const MarketWatch = () => {
             ) : (
               <div className="text-right">
                 <div className={`font-bold ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ${stock.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${(stock.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
                 <div className={`text-xs flex items-center justify-end ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {stock.change >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}

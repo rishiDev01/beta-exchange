@@ -24,7 +24,7 @@ const OrderModal = ({ stock, type, onClose }) => {
     }
   };
 
-  const total = (stock.price * quantity).toFixed(2);
+  const total = ((stock.price || 0) * quantity).toFixed(2);
 
   const modalContent = (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
@@ -41,7 +41,7 @@ const OrderModal = ({ stock, type, onClose }) => {
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 sm:space-y-6">
           <div className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
             <span className="text-sm text-gray-500 font-medium uppercase">Current Price</span>
-            <span className="text-lg font-bold text-gray-900">${stock.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+            <span className="text-lg font-bold text-gray-900">${(stock.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
 
           <div>
