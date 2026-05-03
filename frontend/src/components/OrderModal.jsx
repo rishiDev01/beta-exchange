@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import useOrderStore from '../store/useOrderStore';
 import { X } from 'lucide-react';
 
@@ -25,8 +26,8 @@ const OrderModal = ({ stock, type, onClose }) => {
 
   const total = (stock.price * quantity).toFixed(2);
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  const modalContent = (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className={`p-4 flex justify-between items-center text-white ${type === 'BUY' ? 'bg-blue-600' : 'bg-red-600'}`}>
           <h3 className="text-lg font-bold flex items-center">
@@ -71,6 +72,8 @@ const OrderModal = ({ stock, type, onClose }) => {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default OrderModal;
