@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import useOrderStore from '../store/useOrderStore';
 import useMarketStore from '../store/useMarketStore';
 import { Briefcase } from 'lucide-react';
+import { TableSkeleton } from './Skeleton';
 
 const Holdings = () => {
-  const { holdings, fetchHoldings } = useOrderStore();
+  const { holdings, fetchHoldings, isLoading } = useOrderStore();
   const { stocks } = useMarketStore();
 
   useEffect(() => {
@@ -20,6 +21,14 @@ const Holdings = () => {
       isProfit: pl >= 0,
     };
   };
+
+  if (isLoading && holdings.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors duration-200">
+        <TableSkeleton />
+      </div>
+    );
+  }
 
   if (holdings.length === 0) {
     return (

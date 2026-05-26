@@ -7,6 +7,8 @@ const userRoutes = require('./routes/userRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const marketRoutes = require('./routes/marketRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const watchlistRoutes = require('./routes/watchlistRoutes');
+const alertRoutes = require('./routes/alertRoutes');
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // Basic Route for testing
 app.get('/api/health', (req, res) => {

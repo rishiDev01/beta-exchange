@@ -13,6 +13,11 @@ const initSocket = (server) => {
   io.on('connection', (socket) => {
     console.log(`Socket Connected: ${socket.id}`);
 
+    socket.on('join', (userId) => {
+      socket.join(userId);
+      console.log(`User ${userId} joined their private room`);
+    });
+
     socket.on('disconnect', () => {
       console.log('User Disconnected');
     });

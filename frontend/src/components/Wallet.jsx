@@ -1,21 +1,42 @@
 import { useEffect, useState } from 'react';
 import useWalletStore from '../store/useWalletStore';
 import { DollarSign, ArrowDownCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { TableSkeleton } from './Skeleton';
 
 const Wallet = () => {
-  const { balance, transactions, isLoading, fetchWallet, deposit, fetchTransactions } = useWalletStore();
+  const { balance, transactions, isLoading, fetchWallet, deposit, withdraw, fetchTransactions, isError, message } = useWalletStore();
   const [depositAmount, setDepositAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
 
   useEffect(() => {
     fetchWallet();
     fetchTransactions();
   }, [fetchWallet, fetchTransactions]);
 
-  const handleDeposit = (e) => {
+  const handleDeposit = async (e) => {
     e.preventDefault();
     if (depositAmount && Number(depositAmount) > 0) {
-      deposit(Number(depositAmount));
-      setDepositAmount('');
+      try {
+        await deposit(Number(depositAmount));
+        toast.success(`Successfully deposited $${depositAmount}`);
+        setDepositAmount('');
+      } catch (error) {
+        toast.error(error.message || 'Deposit failed');
+      }
+    }
+  };
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    if (withdrawAmount && Number(withdrawAmount) > 0) {
+      try {
+        await withdraw(Number(withdrawAmount));
+        toast.success(`Successfully withdrawn $${withdrawAmount}`);
+        setWithdrawAmount('');
+      } catch (error) {
+        toast.error(error.message || 'Withdrawal failed');
+      }
     }
   };
 
@@ -29,30 +50,52 @@ const Wallet = () => {
           ${(balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </div>
         
-        <form onSubmit={handleDeposit} className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-          <input
-            type="number"
-            min="1"
-            required
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
-            className="flex-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2 border text-sm transition-colors"
-            placeholder="Amount to deposit"
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 transition-colors"
-          >
-            <ArrowDownCircle className="mr-2 h-4 w-4" />
-            Deposit
-          </button>
-        </form>
+        <div className="flex flex-col space-y-4">
+          <form onSubmit={handleDeposit} className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="number"
+              min="1"
+              required
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              className="flex-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 p-2.5 border text-sm transition-colors outline-none"
+              placeholder="Deposit amount"
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              Deposit
+            </button>
+          </form>
+
+          <form onSubmit={handleWithdraw} className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="number"
+              min="1"
+              required
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="flex-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 p-2.5 border text-sm transition-colors outline-none"
+              placeholder="Withdraw amount"
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              Withdraw
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6 transition-colors duration-200">
         <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-gray-100">Recent Transactions</h2>
-        {transactions.length === 0 ? (
+        {isLoading && transactions.length === 0 ? (
+          <TableSkeleton />
+        ) : transactions.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 text-sm italic">No transactions yet.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 sm:mx-0">

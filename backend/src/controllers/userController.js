@@ -1,5 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
+const Wallet = require('../models/Wallet');
+const Holding = require('../models/Holding');
+const { stocks } = require('../services/marketService');
 const generateToken = require('../utils/generateToken');
 
 // @desc    Auth user & get token
@@ -76,8 +79,38 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get leaderboard
+// @route   GET /api/users/leaderboard
+// @access  Private
+const getLeaderboard = asyncHandler(async (req, res) => {
+  const users = await User.find({}).select('name');
+  const leaderboard = [];
+
+  for (const user of users) {
+    const wallet = await Wallet.findOne({ user: user._id });
+    const holdings = await Holding.find({ user: user._id });
+    
+    let portfolioValue = 0;
+    holdings.forEach(h => {
+      const currentPrice = stocks.find(s => s.symbol === h.symbol)?.price || h.averagePrice;
+      portfolioValue += currentPrice * h.quantity;
+    });
+
+    leaderboard.push({
+      _id: user._id,
+      name: user.name,
+      totalValue: (wallet ? wallet.balance : 0) + portfolioValue,
+      cash: wallet ? wallet.balance : 0,
+      holdingsValue: portfolioValue
+    });
+  }
+
+  res.json(leaderboard.sort((a, b) => b.totalValue - a.totalValue));
+});
+
 module.exports = {
   authUser,
   registerUser,
   getUserProfile,
+  getLeaderboard,
 };

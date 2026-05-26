@@ -68,6 +68,58 @@ const depositFunds = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Withdraw funds from wallet
+// @route   POST /api/wallet/withdraw
+// @access  Private
+const withdrawFunds = asyncHandler(async (req, res) => {
+  const { amount } = req.body;
+
+  if (!amount || amount <= 0) {
+    res.status(400);
+    throw new Error('Invalid withdrawal amount');
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    let wallet = await Wallet.findOne({ user: req.user._id }).session(session);
+
+    if (!wallet || wallet.balance < amount) {
+      res.status(400);
+      throw new Error('Insufficient funds for withdrawal');
+    }
+
+    wallet.balance -= Number(amount);
+    await wallet.save({ session });
+
+    const transaction = await Transaction.create(
+      [
+        {
+          user: req.user._id,
+          type: 'WITHDRAWAL',
+          amount: Number(amount),
+          status: 'COMPLETED',
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      wallet,
+      transaction: transaction[0],
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(res.statusCode === 200 ? 500 : res.statusCode);
+    throw new Error(error.message || 'Withdrawal failed');
+  }
+});
+
 // @desc    Get user transactions
 // @route   GET /api/wallet/transactions
 // @access  Private
@@ -79,5 +131,6 @@ const getTransactions = asyncHandler(async (req, res) => {
 module.exports = {
   getWalletBalance,
   depositFunds,
+  withdrawFunds,
   getTransactions,
 };

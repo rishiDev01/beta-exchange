@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import useOrderStore from '../store/useOrderStore';
 import { X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const OrderModal = ({ stock, type, onClose }) => {
+  const [orderType, setOrderType] = useState('MARKET');
+  const [limitPrice, setLimitPrice] = useState(stock.price || 0);
   const [quantity, setQuantity] = useState(1);
   const { placeOrder, isLoading } = useOrderStore();
 
@@ -14,17 +17,17 @@ const OrderModal = ({ stock, type, onClose }) => {
         symbol: stock.symbol,
         type,
         quantity: Number(quantity),
-        orderType: 'MARKET',
-        price: stock.price,
+        orderType,
+        price: orderType === 'LIMIT' ? Number(limitPrice) : stock.price,
       });
-      alert(`Order ${type} Successful!`);
+      toast.success(`${orderType} ${type} Order Placed!`);
       onClose();
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 
-  const total = ((stock.price || 0) * quantity).toFixed(2);
+  const total = ((orderType === 'LIMIT' ? limitPrice : stock.price || 0) * quantity).toFixed(2);
 
   const modalContent = (
     <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
@@ -39,9 +42,42 @@ const OrderModal = ({ stock, type, onClose }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 sm:space-y-6">
-          <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between items-center transition-colors">
-            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Current Price</span>
-            <span className="text-lg font-bold text-gray-900 dark:text-white">${(stock.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 p-1">
+            <button
+              type="button"
+              onClick={() => setOrderType('MARKET')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${orderType === 'MARKET' ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
+            >
+              MARKET
+            </button>
+            <button
+              type="button"
+              onClick={() => setOrderType('LIMIT')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${orderType === 'LIMIT' ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
+            >
+              LIMIT
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg transition-colors">
+              <span className="block text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Price</span>
+              <span className="text-lg font-black text-gray-900 dark:text-white">${(stock.price || 0).toFixed(2)}</span>
+            </div>
+            {orderType === 'LIMIT' && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-colors">
+                <label className="block text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase mb-1 tracking-wider">Limit Price</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  value={limitPrice}
+                  onChange={(e) => setLimitPrice(e.target.value)}
+                  className="w-full bg-transparent text-lg font-black text-blue-700 dark:text-blue-300 outline-none"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -66,7 +102,7 @@ const OrderModal = ({ stock, type, onClose }) => {
             disabled={isLoading}
             className={`w-full py-3.5 rounded-lg text-white font-bold text-lg shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 ${type === 'BUY' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 dark:shadow-none' : 'bg-red-600 hover:bg-red-700 shadow-red-200 dark:shadow-none'}`}
           >
-            {isLoading ? 'Processing...' : `${type} ORDER`}
+            {isLoading ? 'Processing...' : `${orderType} ${type}`}
           </button>
         </form>
       </div>

@@ -30,6 +30,9 @@ const orderSchema = new mongoose.Schema(
       type: Number, // Price at which order was placed or limit price
       required: true,
     },
+    executionPrice: {
+      type: Number, // Actual price at which order was executed
+    },
     status: {
       type: String,
       required: true,

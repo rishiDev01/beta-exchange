@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { stocks, getHistoricalData, searchStocks, getQuote, trackStock } = require('../services/marketService');
+const { stocks, getHistoricalData, searchStocks, getQuote, trackStock, getMarketNews } = require('../services/marketService');
 const { protect } = require('../middleware/authMiddleware');
 
 // @desc    Get all stocks initial data
@@ -66,6 +66,18 @@ router.get('/history/:symbol', protect, async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching history' });
+  }
+});
+
+// @desc    Get market news
+// @route   GET /api/market/news
+// @access  Private
+router.get('/news', protect, async (req, res) => {
+  try {
+    const news = await getMarketNews(req.query.category || 'general');
+    res.json(news);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching news' });
   }
 });
 

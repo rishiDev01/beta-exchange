@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { TrendingUp, ShieldCheck, BarChart2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +19,7 @@ const Register = () => {
 
   useEffect(() => {
     if (isError) {
-      alert(message);
+      toast.error(message);
     }
 
     if (isSuccess || user) {

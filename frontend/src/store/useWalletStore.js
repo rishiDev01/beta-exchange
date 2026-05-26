@@ -41,6 +41,27 @@ const useWalletStore = create((set) => ({
     } catch (error) {
       const message = error.response?.data?.message || error.message;
       set({ isLoading: false, isError: true, message });
+      throw new Error(message);
+    }
+  },
+
+  withdraw: async (amount) => {
+    set({ isLoading: true });
+    try {
+      const token = useAuthStore.getState().user?.token;
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      const response = await axios.post(API_URL + 'withdraw', { amount }, config);
+      set((state) => ({ 
+        balance: response.data.wallet.balance, 
+        transactions: [response.data.transaction, ...state.transactions],
+        isLoading: false, 
+        isError: false 
+      }));
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      set({ isLoading: false, isError: true, message });
+      throw new Error(message);
     }
   },
 

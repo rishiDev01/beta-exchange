@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { getIO } = require('../config/socket');
+const { executePendingOrders, checkAlerts } = require('./orderService');
 
 // Initial symbols to track. All values (price, name, change) will be fetched dynamically.
 const stocks = [
@@ -93,6 +94,8 @@ const fetchStockData = async () => {
     }
 
     io.emit('marketData', updatedStocks);
+    await executePendingOrders(updatedStocks);
+    await checkAlerts(updatedStocks);
   } catch (error) {
     console.error('Error in fetchStockData:', error.message);
     simulateData();
@@ -108,6 +111,8 @@ const simulateData = () => {
     stock.change = parseFloat(changeAmount.toFixed(2));
   });
   io.emit('marketData', stocks);
+  executePendingOrders(stocks);
+  checkAlerts(stocks);
 };
 
 const startPriceSimulator = () => {
@@ -141,6 +146,7 @@ const getHistoricalData = async (symbol, resolution = 'D') => {
         high: response.data.h[index],
         low: response.data.l[index],
         close: response.data.c[index],
+        volume: response.data.v[index],
       }));
     }
     return generateFakeHistory();
@@ -160,7 +166,8 @@ const generateFakeHistory = () => {
     const close = open + (Math.random() - 0.5) * 10;
     const high = Math.max(open, close) + Math.random() * 5;
     const low = Math.min(open, close) - Math.random() * 5;
-    data.push({ time, open, high, low, close });
+    const volume = Math.floor(Math.random() * 1000000) + 500000;
+    data.push({ time, open, high, low, close, volume });
     basePrice = close;
   }
   return data;
@@ -240,4 +247,25 @@ const trackStock = async (symbol) => {
   return null;
 };
 
-module.exports = { startPriceSimulator, stocks, getHistoricalData, searchStocks, getQuote, trackStock, initializeStocks };
+const getMarketNews = async (category = 'general') => {
+  const apiKey = process.env.FINNHUB_API_KEY;
+  if (!apiKey || apiKey === 'your_finnhub_api_key_here') {
+     return [
+       { id: 1, headline: 'Beta Exchange hits 1 million virtual traders!', summary: 'The popular trading simulator has reached a new milestone today.', source: 'Beta News', datetime: Date.now()/1000, url: '#' },
+       { id: 2, headline: 'Tech stocks rally on earnings growth', summary: 'Major tech companies reported better than expected quarterly results.', source: 'Market Daily', datetime: Date.now()/1000 - 3600, url: '#' },
+       { id: 3, headline: 'Federal Reserve maintains interest rates', summary: 'The Fed decided to keep rates steady in its latest meeting.', source: 'Finance Times', datetime: Date.now()/1000 - 7200, url: '#' }
+     ];
+  }
+
+  try {
+    const response = await axios.get(
+      `https://finnhub.io/api/v1/news?category=${category}&token=${apiKey}`
+    );
+    return response.data.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching market news:', error.message);
+    return [];
+  }
+};
+
+module.exports = { startPriceSimulator, stocks, getHistoricalData, searchStocks, getQuote, trackStock, initializeStocks, getMarketNews };

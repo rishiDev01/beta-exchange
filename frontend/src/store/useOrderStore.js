@@ -56,6 +56,26 @@ const useOrderStore = create((set, get) => ({
       throw new Error(msg);
     }
   },
+
+  cancelOrder: async (orderId) => {
+    set({ isLoading: true });
+    try {
+      const token = useAuthStore.getState().user?.token;
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(API_URL + orderId, config);
+      
+      // Refresh state
+      get().fetchOrders();
+      get().fetchHoldings();
+      useWalletStore.getState().fetchWallet();
+      
+      set({ isLoading: false, isError: false });
+    } catch (error) {
+      const msg = error.response?.data?.message || error.message;
+      set({ isLoading: false, isError: true, message: msg });
+      throw new Error(msg);
+    }
+  },
 }));
 
 export default useOrderStore;
